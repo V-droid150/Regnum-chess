@@ -38,7 +38,7 @@
   --pc-w:  #fdf6e3;
   --pc-b:  #1a1208;
 
-  --bs: min(calc(100vw - 16px), calc(100svh - 220px), 480px);
+  --bs: min(calc(100vw - 54px), calc(100svh - 220px), 480px);
   --radius: 10px;
   --shadow: 0 8px 40px rgba(0,0,0,.7);
 }
@@ -48,7 +48,7 @@
 @media (min-width: 1020px) {
   :root { --bs: min(calc(100vw - 380px), calc(100svh - 110px), 560px); }
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 html, body {
   height: 100%; width: 100%;
   background: var(--bg);
