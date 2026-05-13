@@ -10,21 +10,21 @@
    DESIGN TOKENS
 ══════════════════════════════════════ */
 :root {
-  --bg:         #0c0e14;
-  --bg-panel:   #111520;
-  --bg-card:    #161c2a;
-  --bg-card2:   #1a2030;
-  --border:     #242d3e;
-  --border-hi:  #2e3a50;
+  --bg:         #c8a068;
+  --bg-panel:   #b88d52;
+  --bg-card:    #a87840;
+  --bg-card2:   #9c6c38;
+  --border:     #6a4018;
+  --border-hi:  #8a5a2c;
 
-  --gold:       #c8a84b;
-  --gold-hi:    #e8cc78;
-  --gold-lo:    #7a6228;
-  --gold-glow:  rgba(200,168,75,.18);
+  --gold:       #6b3d0a;
+  --gold-hi:    #3d2000;
+  --gold-lo:    #8a5a18;
+  --gold-glow:  rgba(107,61,10,.18);
 
-  --t-hi:  #eee6d0;
-  --t-mid: #8a7c62;
-  --t-lo:  #3e3828;
+  --t-hi:  #1c0e04;
+  --t-mid: #4a2810;
+  --t-lo:  #785030;
 
   --sq-l:   #f0d9b5;
   --sq-d:   #b58863;
@@ -40,7 +40,7 @@
 
   --bs: min(calc(100vw - 16px), calc(100svh - 220px), 480px);
   --radius: 10px;
-  --shadow: 0 8px 40px rgba(0,0,0,.7);
+  --shadow: 0 8px 40px rgba(0,0,0,.35);
 }
 @media (min-width: 740px) {
   :root { --bs: min(calc(100vw - 360px), calc(100svh - 130px), 520px); }
@@ -55,6 +55,8 @@
 *, *::before, *::after {
   box-sizing: border-box; margin: 0; padding: 0;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
 }
 html, body {
   height: 100%; width: 100%;
@@ -81,19 +83,20 @@ html, body {
 ══════════════════════════════════════ */
 #menuScreen {
   flex-direction: column; gap: 0;
-  background: radial-gradient(ellipse at 50% 20%, #1c1500 0%, #0c0e14 65%);
+  background: radial-gradient(ellipse at 50% 20%, #dcc090 0%, #c8a068 65%);
 }
 .menu-crown {
   font-size: clamp(2rem, 8vw, 3.6rem);
   animation: float 3.2s ease-in-out infinite;
   margin-bottom: -.1em;
-  filter: drop-shadow(0 0 18px rgba(200,168,75,.6));
+  color: var(--gold);
+  filter: drop-shadow(0 0 18px rgba(107,61,10,.5));
 }
 @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 .menu-logo {
   font-family: "Cinzel", serif; font-size: clamp(2rem,7vw,4rem);
   font-weight: 900; letter-spacing: .28em; color: var(--gold);
-  text-shadow: 0 0 40px rgba(200,168,75,.35), 0 2px 0 #000;
+  text-shadow: 0 0 40px rgba(107,61,10,.3), 0 2px 0 rgba(0,0,0,.2);
   margin-bottom: .1em; text-align: center;
 }
 .menu-sub {
@@ -151,7 +154,7 @@ html, body {
 ══════════════════════════════════════ */
 #gameScreen {
   flex-direction: column; align-items: center; padding: 0;
-  background: radial-gradient(ellipse at 50% 0%, #181208 0%, #0c0e14 55%);
+  background: radial-gradient(ellipse at 50% 0%, #d8b880 0%, #c8a068 55%);
 }
 .game-layout {
   display: flex; flex-direction: column; align-items: center;
@@ -450,6 +453,9 @@ html, body {
 .mob-timer { font-family: "Cinzel", serif; font-size: 1.1rem; font-weight: 700; color: var(--gold); }
 .mob-timer.low { color: #d94040; animation: blink 1s infinite; }
 
+.mob-cap-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 6px; gap: 4px; }
+.mob-cap-side { font-size: 14px; letter-spacing: 1px; color: var(--t-mid); min-height: 18px; flex: 1; font-family: "Segoe UI Symbol", "Apple Color Emoji", "Noto Sans Symbols", serif; }
+.mob-cap-side:last-child { text-align: right; }
 .mob-status-row { display: flex; gap: 5px; align-items: center; padding: 0 1px; }
 .mob-status {
   flex: 1; font-family: "Cinzel", serif; font-size: .66rem;
@@ -644,6 +650,10 @@ html, body {
           </div>
           <div class="mob-timer" id="mobTimerW">&#8212;</div>
         </div>
+      </div>
+      <div class="mob-cap-row">
+        <div class="mob-cap-side" id="mobCapB"></div>
+        <div class="mob-cap-side" id="mobCapW"></div>
       </div>
       <div class="mob-status-row">
         <div class="mob-status" id="mobStatus">Giliran Putih</div>
@@ -1090,8 +1100,14 @@ function fmtTime(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);}
 
 // ── CAPTURED ──
 function updateCaptured(){
-  document.getElementById('capB').textContent=G.capturedByB.map(p=>UNI[p]).join('');
-  document.getElementById('capW').textContent=G.capturedByW.map(p=>UNI[p]).join('');
+  const capBTxt=G.capturedByB.map(p=>UNI[p]).join('');
+  const capWTxt=G.capturedByW.map(p=>UNI[p]).join('');
+  document.getElementById('capB').textContent=capBTxt;
+  document.getElementById('capW').textContent=capWTxt;
+  const mbB=document.getElementById('mobCapB');
+  const mbW=document.getElementById('mobCapW');
+  if(mbB) mbB.textContent=capBTxt;
+  if(mbW) mbW.textContent=capWTxt;
   const wAdv=G.capturedByW.reduce((s,p)=>s+(VALS[p[1]]||0),0);
   const bAdv=G.capturedByB.reduce((s,p)=>s+(VALS[p[1]]||0),0);
   const diff=wAdv-bAdv;
@@ -1350,6 +1366,11 @@ function scheduleBotMove(){
   },delay);
 }
 
+let _lTap=0;
+document.addEventListener('touchstart',function(e){const n=Date.now();if(n-_lTap<250)e.preventDefault();},{passive:false});
+document.addEventListener('touchend',function(e){const n=Date.now();if(n-_lTap<250&&n-_lTap>0)e.preventDefault();_lTap=n;},{passive:false});
+document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1)e.preventDefault();},{passive:false});
+document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
 window.addEventListener('load',()=>{
   renderTimers();
   document.getElementById('diffSection').style.display='';
