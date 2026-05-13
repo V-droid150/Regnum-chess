@@ -350,6 +350,8 @@ html, body {
 }
 .moves-drawer.open { transform: translateY(0); }
 @media (max-width: 739px) { .moves-drawer { display: block; } }
+@media (max-width: 739px) { .board-outer { width: 100%; } }
+@media (min-width: 740px) and (max-width: 1019px) { .side-panel { width: 140px; } }
 .drawer-handle { width: 32px; height: 4px; background: var(--border-hi); border-radius: 2px; margin: 0 auto 10px; }
 .drawer-title { font-family: "Cinzel", serif; font-size: .68rem; letter-spacing: .15em; color: var(--gold-lo); text-align: center; margin-bottom: 10px; }
 .modal-overlay {
@@ -967,7 +969,7 @@ function getPseudo(board,r,c,col,castling,ep){
   const free=(tr,tc)=>tr>=0&&tr<8&&tc>=0&&tc<8&&(!board[tr][tc]||board[tr][tc][0]===opp);
   const empty=(tr,tc)=>tr>=0&&tr<8&&tc>=0&&tc<8&&!board[tr][tc];
   const occ=(tr,tc)=>tr>=0&&tr<8&&tc>=0&&tc<8&&board[tr][tc]&&board[tr][tc][0]===opp;
-  const slide=(dr,dc)=>{let nr=r+dr,nc=c+dc;while(nr>=0&&nr<8&&nc>=0&&nc<8){if(board[nr][nc]){if(board[nr][nc][0]===opp)moves.push([nr,nc]);break;}moves.push([nr,nc]);nr+=dr;nc+=dc;};}
+  const slide=(dr,dc)=>{let nr=r+dr,nc=c+dc;while(nr>=0&&nr<8&&nc>=0&&nc<8){if(board[nr][nc]){if(board[nr][nc][0]===opp)moves.push([nr,nc]);break;}moves.push([nr,nc]);nr+=dr;nc+=dc;};};
   if(type==='P'){
     const dir=col==='w'?-1:1,start=col==='w'?6:1;
     if(empty(r+dir,c)){moves.push([r+dir,c]);if(r===start&&empty(r+2*dir,c))moves.push([r+2*dir,c]);}
@@ -1095,6 +1097,10 @@ function scheduleBotMove(){
     else{const s=gameStatus();if(s!=='playing')endGame(s==='checkmate'?'SKAKMAT!':'SERI','');}
   },delay);
 }
+let _lTap=0;
+document.addEventListener('touchend',function(e){const n=Date.now();if(n-_lTap<300&&n-_lTap>0)e.preventDefault();_lTap=n;},{passive:false});
+document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1)e.preventDefault();},{passive:false});
+document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
 window.addEventListener('load',()=>{
   renderTimers();
   document.getElementById('diffSection').style.display='';
