@@ -967,7 +967,7 @@ function getPseudo(board,r,c,col,castling,ep){
   const free=(tr,tc)=>tr>=0&&tr<8&&tc>=0&&tc<8&&(!board[tr][tc]||board[tr][tc][0]===opp);
   const empty=(tr,tc)=>tr>=0&&tr<8&&tc>=0&&tc<8&&!board[tr][tc];
   const occ=(tr,tc)=>tr>=0&&tr<8&&tc>=0&&tc<8&&board[tr][tc]&&board[tr][tc][0]===opp;
-  const slide=(dr,dc)=>{let nr=r+dr,nc=c+dc;while(nr>=0&&nr<8&&nc>=0&&nc<8){if(board[nr][nc]){if(board[nr][nc][0]===opp)moves.push([nr,nc]);break;}moves.push([nr,nc]);nr+=dr;nc+=dc;};};
+  const slide=(dr,dc)=>{let nr=r+dr,nc=c+dc;while(nr>=0&&nr<8&&nc>=0&&nc<8){if(board[nr][nc]){if(board[nr][nc][0]===opp)moves.push([nr,nc]);break;}moves.push([nr,nc]);nr+=dr;nc+=dc;};}
   if(type==='P'){
     const dir=col==='w'?-1:1,start=col==='w'?6:1;
     if(empty(r+dir,c)){moves.push([r+dir,c]);if(r===start&&empty(r+2*dir,c))moves.push([r+2*dir,c]);}
