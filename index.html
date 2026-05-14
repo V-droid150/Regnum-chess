@@ -259,10 +259,11 @@ html, body {
 }
 .cap-pieces {
   display: flex; flex-wrap: wrap; gap: 1px;
-  font-size: .88rem; min-height: 16px; line-height: 1.25;
-  color: var(--t-mid);
+  font-size: 1.15rem; min-height: 18px; line-height: 1.25;
   font-family: "Segoe UI Symbol", "Apple Color Emoji", "Noto Sans Symbols", serif;
 }
+.cap-pieces.white-caps { color: var(--pc-w); text-shadow: 0 1px 2px rgba(0,0,0,.45); }
+.cap-pieces.black-caps { color: var(--pc-b); }
 .cap-adv {
   font-family: "Cinzel", serif; font-size: .65rem;
   color: var(--gold); margin-top: 2px;
@@ -453,8 +454,10 @@ html, body {
 .mob-timer { font-family: "Cinzel", serif; font-size: 1.1rem; font-weight: 700; color: var(--gold); }
 .mob-timer.low { color: #d94040; animation: blink 1s infinite; }
 
-.mob-cap-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 6px; gap: 4px; }
-.mob-cap-side { font-size: 14px; letter-spacing: 1px; color: var(--t-mid); min-height: 18px; flex: 1; font-family: "Segoe UI Symbol", "Apple Color Emoji", "Noto Sans Symbols", serif; }
+.mob-cap-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 6px; gap: 4px; }
+.mob-cap-side { font-size: 20px; letter-spacing: 2px; min-height: 24px; flex: 1; font-family: "Segoe UI Symbol", "Apple Color Emoji", "Noto Sans Symbols", serif; line-height: 1.2; }
+.mob-cap-side.white-caps { color: var(--pc-w); text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.mob-cap-side.black-caps { color: var(--pc-b); }
 .mob-cap-side:last-child { text-align: right; }
 .mob-status-row { display: flex; gap: 5px; align-items: center; padding: 0 1px; }
 .mob-status {
@@ -560,9 +563,41 @@ html, body {
   font-family: "Segoe UI Symbol", "Apple Color Emoji", "Noto Sans Symbols", serif;
 }
 .promo-btn:hover { border-color: var(--gold); background: var(--gold-glow); transform: scale(1.1); }
+#loadScreen {
+  position: fixed; inset: 0; z-index: 999;
+  background: radial-gradient(ellipse at 50% 35%, #dcc090 0%, #c8a068 65%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .4rem; transition: opacity .6s ease;
+}
+#loadScreen.fade-out { opacity: 0; pointer-events: none; }
+.load-crown {
+  font-size: clamp(5rem, 22vw, 9rem);
+  color: var(--gold);
+  filter: drop-shadow(0 0 28px rgba(107,61,10,.55));
+  animation: float 2.8s ease-in-out infinite;
+  font-family: "Segoe UI Symbol", "Apple Color Emoji", "Noto Sans Symbols", serif;
+  line-height: 1;
+}
+.load-logo {
+  font-family: "Cinzel", serif; font-size: clamp(2.4rem, 9vw, 4.8rem);
+  font-weight: 900; letter-spacing: .28em; color: var(--gold);
+  text-shadow: 0 0 40px rgba(107,61,10,.3), 0 2px 0 rgba(0,0,0,.2);
+  margin-top: .2rem;
+}
+.load-sub {
+  font-family: "Crimson Pro", serif; font-style: italic;
+  font-size: clamp(.9rem, 2.8vw, 1.3rem); color: var(--gold-lo);
+  letter-spacing: .35em; text-transform: uppercase;
+}
 </style>
 </head>
 <body>
+
+<div id="loadScreen">
+  <div class="load-crown">♚︎</div>
+  <div class="load-logo">REGNUM</div>
+  <div class="load-sub">Chess</div>
+</div>
 
 <!-- ════════════ MENU ════════════ -->
 <div id="menuScreen" class="screen">
@@ -652,8 +687,8 @@ html, body {
         </div>
       </div>
       <div class="mob-cap-row">
-        <div class="mob-cap-side" id="mobCapB"></div>
-        <div class="mob-cap-side" id="mobCapW"></div>
+        <div class="mob-cap-side white-caps" id="mobCapB"></div>
+        <div class="mob-cap-side black-caps" id="mobCapW"></div>
       </div>
       <div class="mob-status-row">
         <div class="mob-status" id="mobStatus">Giliran Putih</div>
@@ -674,7 +709,7 @@ html, body {
         </div>
         <div class="cap-card">
           <div class="cap-label">Tertangkap</div>
-          <div class="cap-pieces" id="capB"></div>
+          <div class="cap-pieces white-caps" id="capB"></div>
           <div class="cap-adv" id="advB"></div>
         </div>
         <div class="hist-card">
@@ -705,7 +740,7 @@ html, body {
         </div>
         <div class="cap-card">
           <div class="cap-label">Tertangkap</div>
-          <div class="cap-pieces" id="capW"></div>
+          <div class="cap-pieces black-caps" id="capW"></div>
           <div class="cap-adv" id="advW"></div>
         </div>
         <div class="info-card">
@@ -1395,6 +1430,11 @@ window.addEventListener('load',()=>{
   renderTimers();
   document.getElementById('diffSection').style.display='';
   document.getElementById('colorSection').style.display='';
+  const ls=document.getElementById('loadScreen');
+  setTimeout(()=>{
+    ls.classList.add('fade-out');
+    setTimeout(()=>{ls.style.display='none';},650);
+  },3000);
 });
 </script>
 </body>
