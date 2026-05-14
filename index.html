@@ -170,7 +170,7 @@ body {
 }
 .game-layout {
   display: flex; flex-direction: column; align-items: center;
-  width: 100%; height: 100%; max-width: 1160px; padding: 0 8px;
+  width: 100%; height: 100%; max-width: 1160px; padding: env(safe-area-inset-top, 0px) 8px 0;
 }
 
 /* TOP BAR */
@@ -671,7 +671,7 @@ body {
         </div>
       </div>
       <div class="top-actions">
-        <button class="icon-btn" onclick="undoMove()">&#8617; Undo</button>
+        <button class="icon-btn" onclick="undoMove()">Undo</button>
         <button class="icon-btn" onclick="confirmMenu()">&#9776; Menu</button>
       </div>
     </div>
