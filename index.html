@@ -64,7 +64,7 @@ html, body {
   color: var(--t-hi);
   font-family: "Crimson Pro", serif;
   overflow: hidden;
-  touch-action: manipulation;
+  touch-action: none;
 }
 
 /* ══════════════════════════════════════
@@ -505,6 +505,7 @@ html, body {
   max-height: 52vh; overflow-y: auto; z-index: 120;
   transform: translateY(100%);
   transition: transform .3s cubic-bezier(.22,1,.36,1);
+  touch-action: pan-y;
 }
 .moves-drawer.open { transform: translateY(0); }
 @media (max-width: 739px) { .moves-drawer { display: block; } }
@@ -1434,8 +1435,10 @@ function scheduleBotMove(){
 let _lTap=0;
 document.addEventListener('touchstart',function(e){const n=Date.now();if(n-_lTap<250)e.preventDefault();},{passive:false});
 document.addEventListener('touchend',function(e){const n=Date.now();if(n-_lTap<250&&n-_lTap>0)e.preventDefault();_lTap=n;},{passive:false});
-document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1)e.preventDefault();},{passive:false});
+document.addEventListener('touchmove',function(e){if(e.target.closest&&e.target.closest('.moves-drawer'))return;e.preventDefault();},{passive:false});
+document.addEventListener('gesturechange',function(e){e.preventDefault();},{passive:false});
 document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
+document.addEventListener('gestureend',function(e){e.preventDefault();},{passive:false});
 window.addEventListener('load',()=>{
   renderTimers();
   document.getElementById('diffSection').style.display='';
