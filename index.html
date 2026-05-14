@@ -59,13 +59,18 @@
   -webkit-touch-callout: none;
   touch-action: none;
 }
-html, body {
+html {
+  height: 100%; width: 100%;
+  overflow: hidden; touch-action: none;
+  position: fixed; top: 0; left: 0;
+}
+body {
   height: 100%; width: 100%;
   background: var(--bg);
   color: var(--t-hi);
   font-family: "Crimson Pro", serif;
-  overflow: hidden;
-  touch-action: none;
+  overflow: hidden; touch-action: none;
+  position: fixed; top: 0; left: 0;
 }
 
 /* ══════════════════════════════════════
@@ -1442,15 +1447,17 @@ document.addEventListener('gesturestart',function(e){e.preventDefault();},{passi
 document.addEventListener('gestureend',function(e){e.preventDefault();},{passive:false});
 (function(){
   var _vp=window.visualViewport;
+  var _vm=document.querySelector('meta[name=viewport]');
+  var _vc='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
   function _resetZoom(){
     if(_vp&&_vp.scale&&_vp.scale>1.01){
-      var m=document.querySelector('meta[name=viewport]');
-      m.content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
-      setTimeout(function(){m.content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';},50);
+      _vm.content='width=device-width,initial-scale=1,minimum-scale=0.1,maximum-scale=10';
+      setTimeout(function(){_vm.content=_vc;},50);
     }
   }
   if(_vp){_vp.addEventListener('resize',_resetZoom);_vp.addEventListener('scroll',_resetZoom);}
   window.addEventListener('resize',_resetZoom);
+  setInterval(function(){if(_vp&&_vp.scale>1.01)_resetZoom();},500);
 })();
 window.addEventListener('load',()=>{
   renderTimers();
