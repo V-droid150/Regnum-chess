@@ -783,8 +783,8 @@ html, body {
    ════════════════════════════════════════════════ */
 
 const UNI = {
-  wK:'♚',wQ:'♛',wR:'♜',wB:'♝',wN:'♞',wP:'♟',
-  bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟',
+  wK:'♚︎',wQ:'♛︎',wR:'♜︎',wB:'♝︎',wN:'♞︎',wP:'♟︎',
+  bK:'♚︎',bQ:'♛︎',bR:'♜︎',bB:'♝︎',bN:'♞︎',bP:'♟︎',
 };
 const VALS = {K:0,Q:9,R:5,B:3,N:3,P:1};
 
@@ -1010,11 +1010,31 @@ function doMove(fr,fc,tr,tc,promoChoice){
   G.lastMove=[fr,fc,tr,tc];
   G.turn=G.turn==='w'?'b':'w';
   G.posHist.push(boardKey());
+  const[_sr,_sc]=fromBoard(fr,fc);
+  const _srcSq=document.getElementById('s'+_sr+_sc);
+  const _srcRect=_srcSq?_srcSq.getBoundingClientRect():null;
   playSound(capPiece?'capture':'move');
-  const[dr,dc]=fromBoard(tr,tc);
-  const sqEl=document.getElementById('s'+dr+dc);
-  if(sqEl){const p=sqEl.querySelector('.piece');if(p){p.classList.remove('land');void p.offsetWidth;p.classList.add('land');}}
   updateCaptured();renderBoard();renderHistory();
+  (function(){
+    var[dr,dc]=fromBoard(tr,tc);
+    var dstSq=document.getElementById('s'+dr+dc);
+    if(!dstSq||!_srcRect)return;
+    var dstRect=dstSq.getBoundingClientRect();
+    var dx=_srcRect.left-dstRect.left,dy=_srcRect.top-dstRect.top;
+    var p=dstSq.querySelector('.piece');
+    if(!p)return;
+    if(Math.abs(dx)<1&&Math.abs(dy)<1){p.classList.remove('land');void p.offsetWidth;p.classList.add('land');return;}
+    p.style.transition='none';
+    p.style.transform='translate('+dx+'px,'+dy+'px)';
+    p.style.zIndex='10';
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        p.style.transition='transform .2s ease';
+        p.style.transform='';
+        setTimeout(function(){p.style.zIndex='';p.style.transition='';},220);
+      });
+    });
+  })();
   const status=gameStatus();
   if(status==='checkmate'){const w=G.turn==='w'?'Hitam':'Putih';endGame('SKAKMAT!',w+' menang!');playSound('check');return;}
   if(status==='stalemate'){endGame('SERI','Stalemate — tidak ada gerakan legal.');return;}
