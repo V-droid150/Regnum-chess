@@ -311,6 +311,7 @@ html, body {
 .board-outer {
   position: relative; flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center;
+  touch-action: none;
 }
 .board-row {
   display: flex; flex-direction: row; align-items: flex-start;
@@ -494,7 +495,7 @@ html, body {
 ══════════════════════════════════════ */
 .drawer-overlay {
   display: none; position: fixed; inset: 0; z-index: 110;
-  background: rgba(0,0,0,.4);
+  background: rgba(0,0,0,.4); touch-action: none;
 }
 .drawer-overlay.show { display: block; }
 .moves-drawer {
@@ -523,7 +524,7 @@ html, body {
   position: fixed; inset: 0; background: rgba(0,0,0,.8);
   display: flex; align-items: center; justify-content: center;
   z-index: 200; opacity: 0; pointer-events: none;
-  transition: opacity .28s;
+  transition: opacity .28s; touch-action: none;
 }
 .modal-overlay.show { opacity: 1; pointer-events: all; }
 .modal {
@@ -1037,7 +1038,15 @@ function doMove(fr,fc,tr,tc,promoChoice){
   }
   G.enPassant=(type==='P'&&Math.abs(tr-fr)===2)?[(fr+tr)/2,fc]:null;
   G.halfClock=(capPiece||type==='P')?0:G.halfClock+1;
-  if(capPiece){if(capPiece[0]==='w')G.capturedByB.push(capPiece);else G.capturedByW.push(capPiece);}
+  if(capPiece){
+    if(capPiece[0]==='w')G.capturedByB.push(capPiece);else G.capturedByW.push(capPiece);
+    if(capPiece[1]==='R'){
+      if(tr===0&&tc===0)G.castling.bQ=false;
+      if(tr===0&&tc===7)G.castling.bK=false;
+      if(tr===7&&tc===0)G.castling.wQ=false;
+      if(tr===7&&tc===7)G.castling.wK=false;
+    }
+  }
   const castleFlag=(type==='K'&&Math.abs(tc-fc)===2);
   const promo=(type==='P'&&(tr===0||tr===7))?G.board[tr][tc]:null;
   const notation=buildNotation(piece,fr,fc,tr,tc,capPiece,promo,castleFlag);
@@ -1416,8 +1425,9 @@ function scheduleBotMove(){
     if(G.gameOver){G.botThinking=false;updateStatus();return;}
     const m=getBotMove();
     G.botThinking=false;
+    if(G.gameOver)return;
     if(m)doMove(m.from[0],m.from[1],m.to[0],m.to[1]);
-    else{const s=gameStatus();if(s!=='playing')endGame(s==='checkmate'?'SKAKMAT!':'SERI','');}
+    else{const s=gameStatus();if(s!=='playing'&&!G.gameOver)endGame(s==='checkmate'?'SKAKMAT!':'SERI','');}
   },delay);
 }
 
