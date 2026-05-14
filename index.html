@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <title>REGNUM Chess</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet"/>
 <style>
@@ -57,6 +57,7 @@
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none; user-select: none;
   -webkit-touch-callout: none;
+  touch-action: none;
 }
 html, body {
   height: 100%; width: 100%;
@@ -1439,6 +1440,18 @@ document.addEventListener('touchmove',function(e){if(e.target.closest&&e.target.
 document.addEventListener('gesturechange',function(e){e.preventDefault();},{passive:false});
 document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
 document.addEventListener('gestureend',function(e){e.preventDefault();},{passive:false});
+(function(){
+  var _vp=window.visualViewport;
+  function _resetZoom(){
+    if(_vp&&_vp.scale&&_vp.scale>1.01){
+      var m=document.querySelector('meta[name=viewport]');
+      m.content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';
+      setTimeout(function(){m.content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';},50);
+    }
+  }
+  if(_vp){_vp.addEventListener('resize',_resetZoom);_vp.addEventListener('scroll',_resetZoom);}
+  window.addEventListener('resize',_resetZoom);
+})();
 window.addEventListener('load',()=>{
   renderTimers();
   document.getElementById('diffSection').style.display='';
