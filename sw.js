@@ -23,7 +23,12 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  const url = e.request.url;
+  // index.html always fetched fresh from network (network-first)
+  if (url.endsWith('/') || url.endsWith('index.html')) {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    return;
+  }
+  // Other assets: cache-first
+  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request)));
 });
