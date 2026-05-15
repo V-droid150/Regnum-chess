@@ -818,14 +818,39 @@ body {
 <!-- ONLINE MODAL -->
 <div class="modal-overlay" id="onlineModal">
   <div class="modal">
-    <div class="modal-title">&#127760; Mode Online</div>
-    <div class="modal-sub">Mode Online membutuhkan server dan tidak tersedia dalam versi ini. Silakan pilih mode lain.</div>
-    <div class="modal-actions">
-      <button class="modal-btn primary" onclick="hideModal('onlineModal');setOpt('mode','pvb',document.querySelector('.mbtn'))">Mengerti</button>
+    <div class="modal-title">Main Online</div>
+    <div id="olCreate">
+      <div class="modal-sub">Buat room baru atau gabung room teman</div>
+      <div class="modal-actions">
+        <button class="modal-btn primary" onclick="createRoom()">Buat Room</button>
+        <button class="modal-btn" onclick="showJoinStep()">Gabung Room</button>
+        <button class="modal-btn" onclick="hideModal('onlineModal')">Kembali</button>
+      </div>
+    </div>
+    <div id="olWait" class="hidden">
+      <div class="modal-sub">Kode Room:</div>
+      <div id="olCode" style="font-family:'Cinzel',serif;font-size:2.2rem;font-weight:700;letter-spacing:.4em;color:var(--gold);text-align:center;padding:.5rem 1rem;background:var(--bg-card);border-radius:8px;margin:.4rem 0 .3rem">------</div>
+      <div class="modal-sub" style="font-size:.78rem;margin-bottom:.7rem">Bagikan kode ini ke temanmu</div>
+      <div style="display:flex;justify-content:center;gap:5px;margin-bottom:.4rem"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+      <div class="modal-sub">Menunggu lawan bergabung...</div>
+      <div class="modal-actions" style="margin-top:.8rem">
+        <button class="modal-btn" onclick="cancelRoom()">Batal</button>
+      </div>
+    </div>
+    <div id="olJoin" class="hidden">
+      <div class="modal-sub">Masukkan kode dari temanmu:</div>
+      <input id="olCodeInput" type="text" maxlength="6" placeholder="XXXXXX" autocapitalize="characters"
+        style="width:100%;text-align:center;font-family:'Cinzel',serif;font-size:1.5rem;letter-spacing:.35em;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-card2);color:var(--gold);text-transform:uppercase;margin:.5rem 0;outline:none;touch-action:auto">
+      <div class="modal-actions">
+        <button class="modal-btn primary" onclick="joinRoom()">Gabung</button>
+        <button class="modal-btn" onclick="showCreateStep()">Kembali</button>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script>
 /* ════════════════════════════════════════════════
    REGNUM CHESS — Complete Chess Engine + UI
@@ -846,6 +871,7 @@ let G = {
   enPassant:null, timers:{w:0,b:0}, timerInterval:null,
   botThinking:false, gameOver:false, lastMove:null,
   halfClock:0, posHist:[], flipped:false,
+  roomId:null, myColor:'w', onlineMoveCount:0, applyingOnlineMove:false,
 };
 
 // ── MENU ──
@@ -869,6 +895,7 @@ function confirmMenu(){if(!G.gameOver)showModal('confirmModal');else goMenu();}
 function goMenu(){
   clearInterval(G.timerInterval);
   ['confirmModal','gameOverModal'].forEach(hideModal);
+  cleanupOnline();
   closeDrawer();
   document.getElementById('menuScreen').classList.remove('hidden');
   document.getElementById('gameScreen').classList.add('hidden');
@@ -894,7 +921,7 @@ function startGame(){
     timers:{w:G.timerSec,b:G.timerSec},
     botThinking:false,gameOver:false,lastMove:null,
     halfClock:0,posHist:[],
-    flipped:G.mode==='pvb'&&pc==='b',
+    flipped:(G.mode==='pvb'&&pc==='b')||(G.mode==='online'&&G.myColor==='b'),
   });
   document.getElementById('menuScreen').classList.add('hidden');
   document.getElementById('gameScreen').classList.remove('hidden');
@@ -997,6 +1024,7 @@ function onSqClick(r,c){
   if(G.gameOver||G.botThinking) return;
   const[br,bc]=toBoard(r,c);
   if(G.mode==='pvb'&&G.turn!==G.playerCol) return;
+  if(G.mode==='online'&&G.turn!==G.myColor) return;
   const piece=G.board[br][bc];
   if(G.selected){
     const sel=G.selected;
@@ -1098,6 +1126,10 @@ function doMove(fr,fc,tr,tc,promoChoice){
   if(status==='draw'){endGame('SERI','Draw — pengulangan 3× atau 50-langkah.');return;}
   if(isInCheck(G.board,G.turn,G.castling)) playSound('check');
   updateStatus();updateCaptured();startTimerTick();
+  if(G.mode==='online'&&!G.applyingOnlineMove){
+    firebase.database().ref('rooms/'+G.roomId+'/moves/'+G.onlineMoveCount).set({fr:fr,fc:fc,tr:tr,tc:tc,promo:promoChoice||null});
+    G.onlineMoveCount++;
+  }
   if(G.mode==='pvb'&&G.turn!==G.playerCol&&!G.gameOver) scheduleBotMove();
 }
 
@@ -1114,7 +1146,7 @@ function buildNotation(piece,fr,fc,tr,tc,cap,promo,castle){
 
 // ── UNDO ──
 function undoMove(){
-  if(G.botThinking) return;
+  if(G.botThinking||G.mode==='online') return;
   const steps=G.mode==='pvb'?2:1;
   let done=0;
   while(done<steps&&G.history.length>0){
@@ -1472,6 +1504,93 @@ document.addEventListener('gestureend',function(e){e.preventDefault();},{passive
   vv.addEventListener('scroll',counterZoom);
   setInterval(counterZoom,200);
 })();
+// ── FIREBASE ONLINE ──────────────────────────────────────────
+firebase.initializeApp({
+  apiKey:"AIzaSyBP34-OuM2zYBwk2i4oJPgvQoslh-M4thU",
+  authDomain:"regnum-chess.firebaseapp.com",
+  databaseURL:"https://regnum-chess-default-rtdb.firebaseio.com",
+  projectId:"regnum-chess",
+  storageBucket:"regnum-chess.firebasestorage.app",
+  messagingSenderId:"346228861299",
+  appId:"1:346228861299:web:532f7ce588042ba168bd06"
+});
+function _db(){return firebase.database();}
+function genCode(){return Math.random().toString(36).substr(2,6).toUpperCase();}
+function showCreateStep(){
+  document.getElementById('olCreate').classList.remove('hidden');
+  document.getElementById('olWait').classList.add('hidden');
+  document.getElementById('olJoin').classList.add('hidden');
+}
+function showJoinStep(){
+  document.getElementById('olCreate').classList.add('hidden');
+  document.getElementById('olJoin').classList.remove('hidden');
+}
+function createRoom(){
+  var code=genCode();
+  G.roomId=code; G.myColor='w';
+  _db().ref('rooms/'+code).set({status:'waiting',created:Date.now(),whiteConnected:true,blackConnected:false,moves:{}});
+  document.getElementById('olCode').textContent=code;
+  document.getElementById('olCreate').classList.add('hidden');
+  document.getElementById('olWait').classList.remove('hidden');
+  _db().ref('rooms/'+code+'/status').on('value',function(s){
+    if(s.val()==='playing'){_db().ref('rooms/'+code+'/status').off();startOnlineGame();}
+  });
+}
+function cancelRoom(){
+  if(G.roomId){_db().ref('rooms/'+G.roomId).remove();_db().ref('rooms/'+G.roomId).off();G.roomId=null;}
+  showCreateStep();
+  hideModal('onlineModal');
+}
+function joinRoom(){
+  var code=(document.getElementById('olCodeInput').value||'').trim().toUpperCase();
+  if(code.length<4){alert('Kode room tidak valid');return;}
+  _db().ref('rooms/'+code).once('value',function(s){
+    var room=s.val();
+    if(!room){alert('Room tidak ditemukan');return;}
+    if(room.status!=='waiting'){alert('Room sudah penuh atau tidak tersedia');return;}
+    G.roomId=code; G.myColor='b';
+    _db().ref('rooms/'+code).update({status:'playing',blackConnected:true});
+    hideModal('onlineModal');
+    startOnlineGame();
+  });
+}
+function startOnlineGame(){
+  hideModal('onlineModal');
+  G.mode='online'; G.chosenColor=G.myColor; G.onlineMoveCount=0; G.applyingOnlineMove=false;
+  startGame();
+  listenOnlineMoves();
+  setupDisconnect();
+}
+function listenOnlineMoves(){
+  _db().ref('rooms/'+G.roomId+'/moves').on('value',function(s){
+    var obj=s.val()||{};
+    while(obj.hasOwnProperty(String(G.onlineMoveCount))){
+      var idx=G.onlineMoveCount;
+      var m=obj[String(idx)];
+      var isMine=(idx%2===0)===(G.myColor==='w');
+      if(!isMine){G.applyingOnlineMove=true;doMove(m.fr,m.fc,m.tr,m.tc,m.promo||null);G.applyingOnlineMove=false;}
+      G.onlineMoveCount++;
+    }
+  });
+}
+function setupDisconnect(){
+  var db=_db();
+  var myField=G.myColor==='w'?'whiteConnected':'blackConnected';
+  var oppField=G.myColor==='w'?'blackConnected':'whiteConnected';
+  db.ref('rooms/'+G.roomId+'/'+myField).onDisconnect().set(false);
+  db.ref('rooms/'+G.roomId+'/'+oppField).on('value',function(s){
+    if(s.val()===false&&!G.gameOver){endGame('MENANG!','Lawan keluar dari permainan');}
+  });
+}
+function cleanupOnline(){
+  if(!G.roomId)return;
+  var db=_db();
+  var myField=G.myColor==='w'?'whiteConnected':'blackConnected';
+  db.ref('rooms/'+G.roomId+'/'+myField).set(false);
+  db.ref('rooms/'+G.roomId).off();
+  G.roomId=null;
+}
+// ─────────────────────────────────────────────────────────────
 window.addEventListener('load',()=>{
   renderTimers();
   document.getElementById('diffSection').style.display='';
