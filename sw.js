@@ -1,4 +1,4 @@
-const CACHE = 'regnum-chess-v1';
+const CACHE = 'regnum-chess-v2';
 const ASSETS = [
   './',
   './index.html',
