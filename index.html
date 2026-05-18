@@ -934,14 +934,21 @@ function startGame(){
   startTimerTick();
   if(G.mode==='pvb'&&G.turn!==G.playerCol) scheduleBotMove();
 }
-function restartGame(){hideModal('gameOverModal');startGame();}
+function restartGame(){
+  hideModal('gameOverModal');
+  if(G.mode==='online'){olCleanup();G.mode='pvb';goMenu();return;}
+  startGame();
+}
 
 function setupNames(){
   const isBot=G.mode==='pvb';
+  const isOnline=G.mode==='online';
   const diff=['','Mudah','Menengah','Sulit','Ahli'][G.diff];
   const botName='Bot ('+diff+')';
-  const bName=isBot?(G.playerCol==='b'?'Anda':botName):'Pemain 2';
-  const wName=isBot?(G.playerCol==='w'?'Anda':botName):'Pemain 1';
+  let bName,wName;
+  if(isBot){bName=G.playerCol==='b'?'Anda':botName;wName=G.playerCol==='w'?'Anda':botName;}
+  else if(isOnline){bName=G.myColor==='b'?'Anda':'Lawan';wName=G.myColor==='w'?'Anda':'Lawan';}
+  else{bName='Pemain 2';wName='Pemain 1';}
   document.getElementById('pcNameB').textContent=bName;
   document.getElementById('pcNameW').textContent=wName;
   document.getElementById('mobNameB').textContent=bName;
@@ -1247,6 +1254,7 @@ function renderHistory(){
 function endGame(title,sub){
   G.gameOver=true;clearInterval(G.timerInterval);
   G.selected=null;G.legalMoves=[];renderBoard();
+  if(G.mode==='online') olCleanup();
   document.getElementById('goTitle').textContent=title;
   document.getElementById('goSub').textContent=sub;
   setTimeout(()=>showModal('gameOverModal'),420);
@@ -1566,7 +1574,7 @@ function olCancel(){
 function olJoinRoom(){
   if(!olReady){alert('Mode online membutuhkan koneksi internet. Periksa koneksi kamu.');return;}
   const code=(document.getElementById('olCodeInput').value||'').trim().toUpperCase();
-  if(code.length<4){alert('Kode tidak valid');return;}
+  if(code.length!==6){alert('Kode harus 6 karakter');return;}
   olDB().ref('rooms/'+code).once('value',s=>{
     const room=s.val();
     if(!room){alert('Room tidak ditemukan');return;}
