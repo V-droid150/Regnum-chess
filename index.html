@@ -603,6 +603,44 @@ body {
   font-size: clamp(.9rem, 2.8vw, 1.3rem); color: var(--gold-lo);
   letter-spacing: .35em; text-transform: uppercase;
 }
+
+/* ── ONLINE ROOM ── */
+.ol-opts { display:flex; gap:8px; margin:.7rem 0 .9rem; }
+.ol-opt {
+  flex:1; padding:.85rem .4rem;
+  background:var(--bg-panel); border:1.5px solid var(--border);
+  border-radius:9px; cursor:pointer; transition:all .18s;
+  display:flex; flex-direction:column; align-items:center; gap:.35rem;
+}
+.ol-opt:hover,.ol-opt:active { border-color:var(--gold); background:var(--gold-glow); }
+.ol-opt-icon { font-size:1.4rem; color:var(--gold); }
+.ol-opt-label {
+  font-family:"Cinzel",serif; font-size:.72rem; letter-spacing:.05em; color:var(--t-mid);
+}
+.ol-code {
+  font-family:"Cinzel",serif; font-size:2.4rem; font-weight:700;
+  letter-spacing:.45em; color:var(--gold);
+  background:var(--bg-card2); border-radius:8px;
+  padding:.35rem .6rem; margin:.6rem 0 .5rem; display:inline-block;
+}
+.ol-hint { font-size:.72rem; color:var(--t-lo); margin-bottom:.75rem; }
+.ol-dots { display:flex; justify-content:center; gap:6px; margin-bottom:.9rem; }
+.ol-input {
+  width:100%; text-align:center;
+  font-family:"Cinzel",serif; font-size:1.8rem; letter-spacing:.4em;
+  padding:.48rem; border:1.5px solid var(--border); border-radius:7px;
+  background:var(--bg-panel); color:var(--gold);
+  text-transform:uppercase; margin:.4rem 0 .8rem; outline:none;
+  touch-action:auto; -webkit-user-select:text; user-select:text;
+}
+.ol-input:focus { border-color:var(--gold); }
+.ol-link {
+  background:none; border:none; color:var(--t-lo);
+  font-family:"Cinzel",serif; font-size:.62rem; letter-spacing:.1em;
+  cursor:pointer; display:block; width:100%;
+  text-align:center; padding:.4rem; margin-top:.3rem;
+}
+.ol-link:hover { color:var(--gold); }
 </style>
 </head>
 <body>
@@ -818,36 +856,33 @@ body {
 <!-- ONLINE MODAL -->
 <div class="modal-overlay" id="onlineModal">
   <div class="modal">
-    <div class="modal-title">Main Online</div>
-    <!-- Step 1: pilih buat atau gabung -->
+    <div class="modal-title">Online</div>
+    <!-- Step 1 -->
     <div id="olStep1">
-      <div class="modal-sub">Buat room baru atau masukkan kode teman</div>
-      <div class="modal-actions">
-        <button class="modal-btn primary" onclick="olCreateRoom()">Buat Room</button>
-        <button class="modal-btn" onclick="olShowJoin()">Gabung Room</button>
-        <button class="modal-btn" onclick="hideModal('onlineModal')">Kembali</button>
+      <div class="ol-opts">
+        <button class="ol-opt" onclick="olCreateRoom()">
+          <span class="ol-opt-icon">&#9812;</span>
+          <span class="ol-opt-label">Buat Room</span>
+        </button>
+        <button class="ol-opt" onclick="olShowJoin()">
+          <span class="ol-opt-icon">&#8594;</span>
+          <span class="ol-opt-label">Gabung</span>
+        </button>
       </div>
+      <button class="ol-link" onclick="hideModal('onlineModal')">Kembali</button>
     </div>
     <!-- Step 2: menunggu lawan -->
     <div id="olStep2" class="hidden">
-      <div class="modal-sub">Kode Room:</div>
-      <div id="olRoomCode" style="font-family:'Cinzel',serif;font-size:2.4rem;font-weight:700;letter-spacing:.4em;color:var(--gold);text-align:center;background:var(--bg-card);border-radius:8px;padding:.4rem 1rem;margin:.4rem 0 .8rem">------</div>
-      <div class="modal-sub" style="font-size:.8rem;margin-bottom:.8rem">Kirim kode ini ke temanmu</div>
-      <div style="display:flex;justify-content:center;gap:6px;margin-bottom:.5rem"><div class="td"></div><div class="td"></div><div class="td"></div></div>
-      <div class="modal-sub">Menunggu lawan bergabung...</div>
-      <div class="modal-actions" style="margin-top:.8rem">
-        <button class="modal-btn" onclick="olCancel()">Batal</button>
-      </div>
+      <div id="olRoomCode" class="ol-code">------</div>
+      <div class="ol-hint">Bagikan kode ini ke temanmu</div>
+      <div class="ol-dots"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+      <button class="ol-link" onclick="olCancel()">Batal</button>
     </div>
     <!-- Step 3: masukkan kode -->
     <div id="olStep3" class="hidden">
-      <div class="modal-sub">Masukkan kode room dari temanmu:</div>
-      <input id="olCodeInput" type="text" maxlength="6" placeholder="XXXXXX"
-        style="width:100%;text-align:center;font-family:'Cinzel',serif;font-size:1.6rem;letter-spacing:.4em;padding:.45rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--gold);text-transform:uppercase;margin:.5rem 0;outline:none;touch-action:auto;-webkit-user-select:text;user-select:text">
-      <div class="modal-actions">
-        <button class="modal-btn primary" onclick="olJoinRoom()">Gabung</button>
-        <button class="modal-btn" onclick="olShowStep1()">Kembali</button>
-      </div>
+      <input id="olCodeInput" class="ol-input" type="text" maxlength="6" placeholder="XXXXXX">
+      <button class="modal-btn primary" style="width:100%" onclick="olJoinRoom()">Gabung</button>
+      <button class="ol-link" onclick="olShowStep1()">Kembali</button>
     </div>
   </div>
 </div>
