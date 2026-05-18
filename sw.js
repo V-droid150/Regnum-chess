@@ -1,11 +1,13 @@
-const CACHE = 'regnum-chess-v2';
+const CACHE = 'regnum-chess-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/apple-touch-icon.png',
+  'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js'
 ];
 
 self.addEventListener('install', e => {
@@ -24,11 +26,11 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const url = e.request.url;
-  // index.html always fetched fresh from network (network-first)
+  // index.html: network-first (always fresh), fallback to cache if offline
   if (url.endsWith('/') || url.endsWith('index.html')) {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }
-  // Other assets: cache-first
+  // All other assets: cache-first (includes Firebase CDN scripts)
   e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request)));
 });
