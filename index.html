@@ -1509,17 +1509,21 @@ document.addEventListener('gestureend',function(e){e.preventDefault();},{passive
   setInterval(counterZoom,200);
 })();
 // ══ ONLINE (Firebase) ════════════════════════════════════════
-if(!firebase.apps.length){
-  firebase.initializeApp({
-    apiKey:'AIzaSyBP34-OuM2zYBwk2i4oJPgvQoslh-M4thU',
-    authDomain:'regnum-chess.firebaseapp.com',
-    databaseURL:'https://regnum-chess-default-rtdb.firebaseio.com',
-    projectId:'regnum-chess',
-    storageBucket:'regnum-chess.firebasestorage.app',
-    messagingSenderId:'346228861299',
-    appId:'1:346228861299:web:532f7ce588042ba168bd06'
-  });
-}
+var olReady=false;
+try{
+  if(!firebase.apps.length){
+    firebase.initializeApp({
+      apiKey:'AIzaSyBP34-OuM2zYBwk2i4oJPgvQoslh-M4thU',
+      authDomain:'regnum-chess.firebaseapp.com',
+      databaseURL:'https://regnum-chess-default-rtdb.firebaseio.com',
+      projectId:'regnum-chess',
+      storageBucket:'regnum-chess.firebasestorage.app',
+      messagingSenderId:'346228861299',
+      appId:'1:346228861299:web:532f7ce588042ba168bd06'
+    });
+  }
+  olReady=true;
+}catch(e){console.warn('Firebase tidak tersedia:',e);}
 function olDB(){return firebase.database();}
 function olGenCode(){return Math.random().toString(36).substr(2,6).toUpperCase();}
 
@@ -1534,6 +1538,7 @@ function olShowJoin(){
 }
 
 function olCreateRoom(){
+  if(!olReady){alert('Mode online membutuhkan koneksi internet. Periksa koneksi kamu.');return;}
   const code=olGenCode();
   G.roomId=code; G.myColor='w';
   olDB().ref('rooms/'+code).set({
@@ -1559,6 +1564,7 @@ function olCancel(){
 }
 
 function olJoinRoom(){
+  if(!olReady){alert('Mode online membutuhkan koneksi internet. Periksa koneksi kamu.');return;}
   const code=(document.getElementById('olCodeInput').value||'').trim().toUpperCase();
   if(code.length<4){alert('Kode tidak valid');return;}
   olDB().ref('rooms/'+code).once('value',s=>{
